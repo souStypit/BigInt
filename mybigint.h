@@ -8,7 +8,11 @@ typedef struct BIG_INT {
 } BigInt;
 
 void getBigInt(FILE *fp, BigInt *num);
-void sumBigInt(BigInt num1, BigInt num2, BigInt *result);
-void mulBigInt(BigInt num1, BigInt num2, BigInt *result);
-void printBigInt(BigInt num);
+BigInt zeroBigInt(int length);
+BigInt sumBigInt(BigInt num1, BigInt num2);
+BigInt mulBigInt(BigInt num1, BigInt num2);
+BigInt powBigInt(BigInt base, int exp);
+int compareBigInt(BigInt num1, BigInt num2);
+// void printBigInt(BigInt num);
+void printBigInt(BigInt num, FILE *fp);
 void freeBigInt(BigInt *num);
