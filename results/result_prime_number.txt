@@ -1,2 +1,0 @@
-Number below is a prime number
-1
