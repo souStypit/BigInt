@@ -1,8 +1,16 @@
 CC = gcc
+# CFLAGS = -Werror -Wextra -Wall
+CRUNFILE = ./app
 
 all: clean
-	$(CC) main.c mybigint.c -o main
-	./main
+	mkdir -p results
+	$(CC) $(CFLAGS) main.c mybigint.c -o $(CRUNFILE) -lgmp
+
+run:
+	$(CRUNFILE)
+
+install:
+	sudo apt-get install libgmp3-dev
 
 clean:
-	rm -rf main result.txt
+	rm -rf $(CRUNFILE) ./results

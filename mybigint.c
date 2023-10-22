@@ -1,15 +1,67 @@
 #include "mybigint.h"
 
-void getBigInt(FILE *fp, BigInt *num) {
-    int c;
+bool isPrime(mpz_t num) {
+    mpz_t sqrt_num, i, result;
+    mpz_inits(sqrt_num, i, result, NULL);
 
-    while ((c = fgetc(fp)) != ' ' && c != '\n' && c != EOF) {
-        if (num->length == 0) num->digit = malloc(sizeof(unsigned char));
-        else num->digit = realloc(num->digit, sizeof(unsigned char) * (num->length + 1));
+    if (mpz_cmp_ui(num, 1) == 0) return true;
 
-        num->digit[num->length] = c - '0';
-        num->length++;
+    mpz_sqrt(sqrt_num, num);
+
+    for (mpz_set_ui(i, 2); mpz_cmp(i, sqrt_num) <= 0; mpz_add_ui(i, i, 1)) {
+        mpz_mod(result, num, i);
+
+        if (mpz_cmp_ui(result, 0) == 0) {
+            mpz_clears(sqrt_num, i, result, NULL);
+            return false;
+        }
     }
+
+    mpz_clears(sqrt_num, i, result, NULL);
+
+    if (mpz_cmp_ui(num, 1) <= 0) return false;
+
+    return true;
+}
+
+void powBigInt(char *str1, char *str2, mpz_t *num1, mpz_t *exp, mpz_t *result) {
+    mpz_inits(*num1, *result, *exp, NULL);
+
+    mpz_set_str(*num1, str1, 10);
+    mpz_set_str(*exp, str2, 10);
+
+    mpz_pow_ui(*result, *num1, mpz_get_ui(*exp));
+}
+
+void getBigInt(char *str, BigInt *num) {
+    int c, i = 0;
+
+    num->length = strlen(str);
+    num->digit = malloc(sizeof(char) * num->length);
+    
+    while ((c = str[i]) != ' ' && c != '\n' && c != EOF && c != '\0') {
+        num->digit[i++] = c - '0';
+    }
+}
+
+char *getBigIntStr(FILE *fp) {
+    int c, strlen;
+
+    char *str;
+    str = malloc(sizeof(char));
+    str[0] = '\0';
+    strlen = 1;
+    
+    while ((c = fgetc(fp)) != ' ' && c != '\n' && c != EOF) {
+        str = realloc(str, sizeof(char) * (strlen + 1));
+
+        str[strlen - 1] = c;
+        strlen++;
+    }
+
+    str[strlen] = '\0';
+
+    return str;
 }
 
 BigInt zeroBigInt(int length) {
@@ -21,37 +73,6 @@ BigInt zeroBigInt(int length) {
         result.digit[i] = 0;
     }
 
-    return result;
-}
-
-int compareBigInt(BigInt num1, BigInt num2) {
-    BigInt result;
-
-    if (num1.length != num2.length) {
-        return 1;
-    };
-
-    for (int i = 0; i < num1.length; i++) {
-        if (num1.digit[i] != num2.digit[i]) return 1;
-    }
-
-    return 0;
-}
-
-BigInt powBigInt(BigInt base, int exp) {
-    BigInt result;
-    result.length = 1;
-    result.digit = malloc(sizeof(int) * result.length);
-    result.digit[0] = 1;
-
-    if (exp == 0) {
-        return result;
-    }
-
-    for (int i = 0; i < exp; i++) {
-        result = mulBigInt(base, result);
-    }
-    
     return result;
 }
 
@@ -114,16 +135,6 @@ BigInt sumBigInt(BigInt num1, BigInt num2) {
 
     return result;
 }
-
-// void printBigInt(BigInt num) {
-//     int i = 0;
-
-//     while (num.digit[i] == 0) i++;
-//     while (i < num.length) {
-//         printf("%d", num.digit[i++]);
-//     }
-//     printf("\n");
-// }
 
 void printBigInt(BigInt num, FILE *fp) {
     int i = 0;
