@@ -1,10 +1,52 @@
 #include "mybigint.h"
 
+void generatePrimeNumbers(FILE *fp, mpz_t maxNum) {
+    mpz_t num;
+    mpz_init(num);
+
+    mpz_set_ui(num, 1);
+
+    while (mpz_cmp(num, maxNum) <= 0) {
+        mpz_nextprime(num, num);
+        gmp_fprintf(fp, "%Zd\n", num);
+    }
+
+    mpz_clear(num);
+}
+
+void generateRelPrimeNumbers(FILE *fp, mpz_t maxNum) {
+    mpz_t num1;
+    mpz_t num2;
+    mpz_inits(num1, num2, NULL);
+
+    mpz_set_ui(num1, 2);
+    mpz_set_ui(num2, 3);
+
+    while (mpz_cmp(num1, maxNum) <= 0) {
+        if (isRelPrime(num1, maxNum)) 
+            gmp_fprintf(fp, "%Zd\n", num1);
+        mpz_add_ui(num1, num1, 1);
+    }
+    gmp_fprintf(fp, "%Zd\n", maxNum);
+
+    // while (mpz_cmp(num1, maxNum) <= 0 && mpz_cmp(num2, maxNum) <= 0) {
+    //     bool res = false;
+    //     mpz_set_ui(num1, 2);
+    //     while (mpz_cmp(num1, num2) < 0) {
+    //         if (res += isRelPrime(num1, num2)) gmp_fprintf(fp, "%Zd ", num1);
+    //         mpz_add_ui(num1, num1, 1);
+    //     }
+    //     if (res) gmp_fprintf(fp, "%Zd\n", num1);
+    //     mpz_add_ui(num2, num2, 1);
+    // }
+
+    // mpz_clears(num1, NULL);
+    mpz_clears(num1, num2, NULL);
+}
+
 bool isPrime(mpz_t num) {
     mpz_t sqrt_num, i, result;
     mpz_inits(sqrt_num, i, result, NULL);
-
-    if (mpz_cmp_ui(num, 1) == 0) return true;
 
     mpz_sqrt(sqrt_num, num);
 
@@ -22,6 +64,21 @@ bool isPrime(mpz_t num) {
     if (mpz_cmp_ui(num, 1) <= 0) return false;
 
     return true;
+}
+
+bool isRelPrime(mpz_t num1, mpz_t num2) {
+    mpz_t _mod;
+    mpz_init(_mod);
+
+    if (mpz_cmp_ui(num2, 0) == 0) return mpz_cmp_ui(num1, 1) == 0;
+
+    if (mpz_cmp(num1, num2) > 0) {
+        mpz_mod(_mod, num1, num2);
+        return isRelPrime(num2, _mod);
+    }
+
+    mpz_mod(_mod, num2, num1);
+    return isRelPrime(num1, _mod);
 }
 
 void powBigInt(char *str1, char *str2, mpz_t *num1, mpz_t *exp, mpz_t *result) {

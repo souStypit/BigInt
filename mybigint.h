@@ -9,9 +9,15 @@ typedef struct BIG_INT {
     int length;
 } BigInt;
 
+void generatePrimeNumbers   (FILE *fp, mpz_t maxNum);
+void generateRelPrimeNumbers(FILE *fp, mpz_t maxNum);
+
 bool isPrime(mpz_t num);
+bool isRelPrime(mpz_t num1, mpz_t num2);
+
 void getBigInt(char *str, BigInt *num);
 char *getBigIntStr(FILE *fp);
+
 BigInt zeroBigInt(int length);
 BigInt sumBigInt(BigInt num1, BigInt num2);
 BigInt mulBigInt(BigInt num1, BigInt num2);
