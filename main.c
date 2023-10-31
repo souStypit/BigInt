@@ -1,15 +1,17 @@
 #include "mybigint.h"
 
-#define DIGITS "digits.txt"
-#define PRIME_NUMBER "primes.txt"
-#define RESULT_F_SUM "results/result_sum.txt"
-#define RESULT_F_MUL "results/result_mul.txt"
-#define RESULT_F_POW "results/result_pow.txt"
-#define RESULT_F_BIGGEST_PRIME "results/result_biggest_prime.txt"
-#define RESULT_F_PRIME_NUMBER "results/result_prime_number.txt"
-#define RESULT_F_REL_PRIME_NUMBER "results/result_rel_prime_number.txt"
-#define RESULT_F_GEN_PRIME_NUMBER "results/result_gen_prime_number.txt"
-#define RESULT_F_GEN_REL_PRIME_NUMBER "results/result_gen_rel_prime_number.txt"
+char *fileStr[] = {
+    RESULT_F_SUM,
+    RESULT_F_MUL,
+    RESULT_F_POW,
+    RESULT_F_BIGGEST_PRIME,
+    RESULT_F_PRIME_NUMBER,
+    RESULT_F_REL_PRIME_NUMBER,
+    RESULT_F_GEN_PRIME_NUMBER,
+    RESULT_F_GEN_REL_PRIME_NUMBER
+};
+
+FILE *filePtr[filesAmount];
 
 int fopen_msg(FILE **fp, const char *str, const char *mode) {
     *fp = fopen(str, mode);
@@ -21,9 +23,7 @@ int fopen_msg(FILE **fp, const char *str, const char *mode) {
 }
 
 int main() {
-    FILE *fp, *primesFp, *resultFpSum, *resultFpMul, *resultFpPow, 
-        *resultFpBiggestPrime, *resultFpPrimeNumber, *resultFpRelPrimeNumber,
-        *resultFpGenPrimeNumber, *resultFpGenRelPrimeNumber;
+    FILE *fp, *primesFp;
     BigInt num1, num2, result;
     mpz_t mpzNum1, mpzNum2, mpzResult;
     char *str1, *str2, *primeStr;
@@ -32,14 +32,9 @@ int main() {
 
     res += fopen_msg(&fp,                       DIGITS, "r");
     res += fopen_msg(&primesFp,                 PRIME_NUMBER, "r");
-    res += fopen_msg(&resultFpSum,              RESULT_F_SUM, "w");
-    res += fopen_msg(&resultFpMul,              RESULT_F_MUL, "w");
-    res += fopen_msg(&resultFpPow,              RESULT_F_POW, "w");
-    res += fopen_msg(&resultFpBiggestPrime,     RESULT_F_BIGGEST_PRIME, "w");
-    res += fopen_msg(&resultFpPrimeNumber,      RESULT_F_PRIME_NUMBER, "w");
-    res += fopen_msg(&resultFpRelPrimeNumber,   RESULT_F_REL_PRIME_NUMBER, "w");
-    res += fopen_msg(&resultFpGenPrimeNumber,   RESULT_F_GEN_PRIME_NUMBER, "w");
-    res += fopen_msg(&resultFpGenRelPrimeNumber,RESULT_F_GEN_REL_PRIME_NUMBER, "w");
+
+    for (int i = 0; i < filesAmount; i++) 
+        res += fopen_msg(&filePtr[i], fileStr[i], "w");
 
     if (res) return 1;
 
@@ -61,7 +56,7 @@ int main() {
     getBigInt(str1, &num1);
     getBigInt(str2, &num2);
     result = sumBigInt(num1, num2);
-    printBigInt(result, resultFpSum);
+    printBigInt(result, filePtr[resultFpSum]);
     freeBigInt(&num1);
     freeBigInt(&num2);
     freeBigInt(&result);
@@ -71,7 +66,7 @@ int main() {
     getBigInt(str1, &num1);
     getBigInt(str2, &num2);
     result = mulBigInt(num1, num2);
-    printBigInt(result, resultFpMul);
+    printBigInt(result, filePtr[resultFpMul]);
     freeBigInt(&num1);
     freeBigInt(&num2);
     freeBigInt(&result);
@@ -79,14 +74,14 @@ int main() {
 
     // POW()
     powBigInt(str1, str2, &mpzNum1, &mpzNum2, &mpzResult);
-    gmp_fprintf(resultFpPow, "%Zd\n", mpzResult);
+    gmp_fprintf(filePtr[resultFpPow], "%Zd\n", mpzResult);
     mpz_clears(mpzNum1, mpzNum2, mpzResult, NULL);
     ////
 
     // BIGGEST PRIME
     powBigInt("2", "82589933", &mpzNum1, &mpzNum2, &mpzResult) ;
     mpz_sub_ui(mpzResult, mpzResult, 1);
-    gmp_fprintf(resultFpBiggestPrime, "%Zd\n", mpzResult);
+    gmp_fprintf(filePtr[resultFpBiggestPrime], "%Zd\n", mpzResult);
     mpz_clears(mpzNum1, mpzResult, NULL);
     ////
 
@@ -94,7 +89,7 @@ int main() {
     mpz_init(mpzNum1);
     mpz_set_str(mpzNum1, primeStr, 10);
     isPrimeNumber = isPrime(mpzNum1); 
-    gmp_fprintf(resultFpPrimeNumber, "Number below is %s number\n%Zd\n", isPrimeNumber ? "a prime" : "not a prime", mpzNum1);
+    gmp_fprintf(filePtr[resultFpPrimeNumber], "Number below is %s number\n%Zd\n", isPrimeNumber ? "a prime" : "not a prime", mpzNum1);
     mpz_clear(mpzNum1);
     ////
 
@@ -104,7 +99,7 @@ int main() {
     mpz_set_str(mpzNum1, str1, 10);
     mpz_set_str(mpzNum2, str2, 10);
     isRelPrimeNumber = isRelPrime(mpzNum1, mpzNum2); 
-    gmp_fprintf(resultFpRelPrimeNumber, "Numbers below is %s number\n%Zd\n%Zd\n", isRelPrimeNumber ? "a relative prime" 
+    gmp_fprintf(filePtr[resultFpRelPrimeNumber], "Numbers below is %s number\n%Zd\n%Zd\n", isRelPrimeNumber ? "a relative prime" 
                                                                                 : "not a relative prime", mpzNum1, mpzNum2);
     mpz_clears(mpzNum1, mpzNum2, NULL);
     ////
@@ -112,28 +107,27 @@ int main() {
     // GENERATE PRIME NUMBER
     mpz_init(mpzNum1);
     mpz_set_str(mpzNum1, str1, 10);
-    generatePrimeNumbers(resultFpGenPrimeNumber, mpzNum1);
+    generatePrimeNumbers(filePtr[resultFpGenPrimeNumber], mpzNum1);
     mpz_clear(mpzNum1);
     ////
 
     // GENERATE REL PRIME NUMBER
     mpz_init(mpzNum1);
     mpz_set_str(mpzNum1, str1, 10);
-    generateRelPrimeNumbers(resultFpGenRelPrimeNumber, mpzNum1);
+    generateRelPrimeNumbers(filePtr[resultFpGenRelPrimeNumber], mpzNum1);
     mpz_clear(mpzNum1);
     ////
 
     // CLOSING
     fclose(fp);
     fclose(primesFp);
-    fclose(resultFpSum);
-    fclose(resultFpMul);
-    fclose(resultFpPow);
-    fclose(resultFpBiggestPrime);
-    fclose(resultFpPrimeNumber);
+
     free(str1);
     free(str2);
     free(primeStr);
+
+    for (int i = 0; i < filesAmount; i++) 
+        res += fclose(filePtr[i]);
 
     return 0;
 }
