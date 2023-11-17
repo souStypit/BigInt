@@ -1,12 +1,52 @@
 #include "mybigint.h"
 
+#ifndef MANYPRIMES
+void generatePrimeNumbers(FILE *fp, int bits) {
+    mpz_t num;
+    mpz_init(num);
+    
+    gmp_randstate_t rstate;
+    unsigned long int seed = clock();
+
+    gmp_randinit_default(rstate);
+    gmp_randseed_ui(rstate, seed);
+
+    mpz_urandomb(num, rstate, bits);
+    mpz_nextprime(num, num);
+    gmp_fprintf(fp, "%Zd\n", num);
+
+    gmp_randclear(rstate);
+    mpz_clear(num);
+}
+
+void generateRelPrimeNumbers(FILE *fp, mpz_t initNum, int bits) {
+    mpz_t num;
+    mpz_init(num);
+    
+    gmp_randstate_t rstate;
+    unsigned long int seed = clock();
+
+    gmp_randinit_default(rstate);
+    gmp_randseed_ui(rstate, seed);
+
+    mpz_urandomb(num, rstate, bits);
+
+    while (!isRelPrime(initNum, num))
+        mpz_add_ui(num, num, 1);
+
+    gmp_fprintf(fp, "%Zd\n", num);
+
+    gmp_randclear(rstate);
+    mpz_clear(num);
+}
+#else
 void generatePrimeNumbers(FILE *fp, mpz_t maxNum) {
     mpz_t num;
     mpz_init(num);
 
     mpz_set_ui(num, 1);
 
-    while (mpz_cmp(num, maxNum) <= 0) {
+    while (mpz_cmp(num, maxNum) < 0) {
         mpz_nextprime(num, num);
         gmp_fprintf(fp, "%Zd\n", num);
     }
@@ -29,20 +69,9 @@ void generateRelPrimeNumbers(FILE *fp, mpz_t maxNum) {
     }
     gmp_fprintf(fp, "%Zd\n", maxNum);
 
-    // while (mpz_cmp(num1, maxNum) <= 0 && mpz_cmp(num2, maxNum) <= 0) {
-    //     bool res = false;
-    //     mpz_set_ui(num1, 2);
-    //     while (mpz_cmp(num1, num2) < 0) {
-    //         if (res += isRelPrime(num1, num2)) gmp_fprintf(fp, "%Zd ", num1);
-    //         mpz_add_ui(num1, num1, 1);
-    //     }
-    //     if (res) gmp_fprintf(fp, "%Zd\n", num1);
-    //     mpz_add_ui(num2, num2, 1);
-    // }
-
-    // mpz_clears(num1, NULL);
     mpz_clears(num1, num2, NULL);
 }
+#endif
 
 bool isPrime(mpz_t num) {
     mpz_t sqrt_num, i, result;

@@ -2,7 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>
 #include <gmp.h>
+
+// #define MANYPRIMES
 
 #define DIGITS "digits.txt"
 #define PRIME_NUMBER "primes.txt"
@@ -32,8 +35,14 @@ typedef struct BIG_INT {
     int length;
 } BigInt;
 
+#ifndef MANYPRIMES
+void generatePrimeNumbers   (FILE *fp, int bits);
+void generateRelPrimeNumbers(FILE *fp, mpz_t initNum, int bits);
+#else
 void generatePrimeNumbers   (FILE *fp, mpz_t maxNum);
 void generateRelPrimeNumbers(FILE *fp, mpz_t maxNum);
+#endif
+
 
 bool isPrime(mpz_t num);
 bool isRelPrime(mpz_t num1, mpz_t num2);
